@@ -3,11 +3,12 @@ import { db } from "./db.js"
 import { FastifyPluginAsync } from "fastify"
 
 export const game: FastifyPluginAsync = async (fastify, opts) => {
-  fastify.get("/leaderboard", async (request, reply) => {
+  fastify.get("/leaderboard", async (request: AuthRequest, reply) => {
     const ldb = db.data.users
       .map(u => ({
         username: u.username,
         score: u.score,
+        isYou: u.username === request.username,
       }))
       .sort((a, b) => b.score - a.score)
 

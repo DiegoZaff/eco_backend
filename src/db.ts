@@ -26,7 +26,21 @@ export interface DBSchema {
 
 const adapter = new JSONFile<DBSchema>("./db/db.json")
 export const db = new Low(adapter, {
-  users: [],
+  // bunch of fake stuff to get started
+  users: [
+    {
+      id: crypto.randomUUID(),
+      username: "Giovanni",
+      password: "",
+      score: 24,
+    },
+    {
+      id: crypto.randomUUID(),
+      username: "Katie",
+      password: "",
+      score: 12,
+    },
+  ],
   dailyChallenges: [
     {
       id: crypto.randomUUID(),
