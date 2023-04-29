@@ -85,6 +85,10 @@ fastify.post("/login", async (request, reply) => {
   return user
 })
 
+fastify.get("/dumpdb", async (request, reply) => {
+  return db.data
+})
+
 // write database at the end of every request
 fastify.addHook("onResponse", async (request, reply) => {
   await db.write()
