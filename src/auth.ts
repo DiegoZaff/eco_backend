@@ -1,3 +1,4 @@
+import crypto from "crypto"
 import { FastifyPluginAsync } from "fastify"
 import { User, db } from "./db.js"
 
@@ -27,6 +28,7 @@ export const auth: FastifyPluginAsync = async (fastify, opts) => {
     }
 
     const newUser: User = {
+      id: crypto.randomUUID(),
       username,
       password,
       score: 0,

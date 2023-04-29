@@ -2,6 +2,7 @@ node_modules/
 db
 .expo/
 dist/
+mount/
 npm-debug.*
 *.jks
 *.p8
