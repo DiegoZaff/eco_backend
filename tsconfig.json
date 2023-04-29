@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "assets/*": ["assets/*"],
+      "components/*": ["src/components/*"],
+      "navigation/*": ["src/navigation/*"],
+      "pages/*": ["src/pages/*"],
+      "utils/*": ["src/utils/*"],
+      "contexts/*": ["src/contexts/*"],
+      "api": ["src/api"],
+      "api/*": ["src/api/*"]
+    },
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "lib": ["DOM", "ESNext"],
+    "moduleResolution": "node",
+    "module": "ESNext",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "target": "ESNext",
+    "outDir": "build"
+  }
+}

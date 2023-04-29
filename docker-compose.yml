@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  eco_backend:
+    image: toto04/eco_backend:latest
+    container_name: eco_backend
+    build: .
+    volumes:
+      - ./mount:/usr/src/app/db
+    ports:
+      - "3000:3000"
