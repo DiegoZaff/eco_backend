@@ -20,7 +20,6 @@
     "module": "ESNext",
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "target": "ESNext",
     "outDir": "build"
   }
 }
