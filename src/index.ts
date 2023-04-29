@@ -59,7 +59,12 @@ fastify.get("/dumpdb", async (request, reply) => {
 // Start server
 const start = async () => {
   try {
-    await db.write()
+    try {
+      await db.read()
+    } catch (err) {
+      await db.write()
+    }
+
     await fastify.listen({ port: 3000, host: "0.0.0.0" })
   } catch (err) {
     fastify.log.error(err)
