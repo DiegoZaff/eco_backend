@@ -46,8 +46,9 @@ fastify.post("/register", async (request, reply) => {
     })
   }
 
-  db.data.users.push({ username, password })
-  return user
+  const newUser = { username, password }
+  db.data.users.push(newUser)
+  return newUser
 })
 
 fastify.post("/login", async (request, reply) => {
