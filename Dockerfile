@@ -1,7 +1,6 @@
 FROM node:18
 # Create app directory
 WORKDIR /usr/src/app
-RUN mkdir -p /usr/src/app/db
 
 # Install app dependencies
 COPY package*.json ./

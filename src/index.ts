@@ -1,16 +1,18 @@
 import Fastify from "fastify"
-import { db } from "./db.js"
-import { auth } from "./auth.js"
-import { game } from "./game.js"
-import { AuthRequest } from "./AuthRequest.js"
+import fastifyPostgres from "@fastify/postgres"
 
 const fastify = Fastify({
   logger: true,
 })
 
+// PostgreSQL connection setup
+fastify.register(fastifyPostgres, {
+  connectionString: "postgres://root:root@localhost:5432/root",
+})
+
 // Register Hooks
 // check authentication for every request
-fastify.addHook("preHandler", async (request: AuthRequest, reply) => {
+/* fastify.addHook("preHandler", async (request: AuthRequest, reply) => {
   const authHeader = request.headers.authorization
   if (!authHeader) {
     // set auth to false if no auth header
@@ -54,20 +56,28 @@ fastify.get("/", async (request, reply) => {
 
 fastify.get("/dumpdb", async (request, reply) => {
   return db.data
+}) */
+
+// Route to retrieve users from the database
+
+fastify.get("/users", async (request, reply) => {
+  try {
+    const { rows } = await fastify.pg.query("SELECT * FROM users")
+    reply.send(rows)
+  } catch (error) {
+    console.error("Error retrieving users:", error)
+    reply.code(500).send({ error: "Internal server error" })
+  }
 })
 
 // Start server
 const start = async () => {
   try {
-    try {
-      await db.read()
-    } catch (err) {
-      await db.write()
-    }
-
     await fastify.listen({ port: 3000, host: "0.0.0.0" })
-  } catch (err) {
-    fastify.log.error(err)
+
+    console.log("Server running on http://localhost:3000")
+  } catch (error) {
+    console.error("Error starting server:", error)
     process.exit(1)
   }
 }
