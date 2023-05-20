@@ -15,9 +15,9 @@
     },
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "lib": ["DOM", "ESNext"],
+/*     "lib": ["DOM", "ESNext"], */
     "moduleResolution": "node",
-    "module": "ESNext",
+    "module": "commonjs",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "outDir": "build"

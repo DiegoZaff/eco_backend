@@ -62,11 +62,13 @@ fastify.get("/dumpdb", async (request, reply) => {
 
 fastify.get("/users", async (request, reply) => {
   try {
-    const { rows } = await fastify.pg.query("SELECT * FROM users")
+    const client = await fastify.pg.connect()
+
+    const { rows } = await client.query("SELECT * FROM users")
     reply.send(rows)
   } catch (error) {
     console.error("Error retrieving users:", error)
-    reply.code(500).send({ error: "Internal server error" })
+    reply.code(500).send({ error: "Internal server error!" })
   }
 })
 

@@ -1,15 +1,23 @@
 version: '3'
 services:
   eco_backend:
-    image: diegozaff/eco_backend:latest
+    # image: diegozaff/eco_backend:latest
     container_name: eco_backend
-    build: .
+    # build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       # Our app does not work without our database
       # so this ensures our database is loaded first
       - postgres
     ports:
       - "3000:3000"
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./nodemon.json:/usr/src/app/nodemon.json
+      
+    # command: npm run dev
 
   # This is the configuration for our PostgreSQL database container
   # Note the `postgres` name is important, in out Node app when we refer
@@ -29,11 +37,11 @@ services:
     ports:
       # Standard port for PostgreSQL databases
       - "5432:5432"
-    #volumes:
+    volumes:
       # When the PostgresSQL container is started it will run any scripts
       # provided in the `docker-entrypoint-initdb.d` directory, this connects
       # our seed file to that directory so that it gets run
-    #  - ./database-seed.sql:/docker-entrypoint-initdb.d/database-seed.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # PostgreSQL pgAdmin panel accessible at http://localhost:16543/
   pgadmin-compose:
