@@ -1,5 +1,6 @@
 import Fastify from "fastify"
 import fastifyPostgres from "@fastify/postgres"
+import { AuthRequest } from "./AuthRequest"
 
 const fastify = Fastify({
   logger: true,
@@ -7,12 +8,12 @@ const fastify = Fastify({
 
 // PostgreSQL connection setup
 fastify.register(fastifyPostgres, {
-  connectionString: "postgres://root:root@localhost:5432/root",
+  connectionString: "postgres://root:password@postgres:5432/db",
 })
 
 // Register Hooks
 // check authentication for every request
-/* fastify.addHook("preHandler", async (request: AuthRequest, reply) => {
+fastify.addHook("preHandler", async (request: AuthRequest, reply) => {
   const authHeader = request.headers.authorization
   if (!authHeader) {
     // set auth to false if no auth header
@@ -28,17 +29,37 @@ fastify.register(fastifyPostgres, {
   }
 
   const [username, password] = token.split(":")
-  const user = db.data.users.find(user => user.username === username)
+
+  const client = await fastify.pg.connect()
+
+  const result = await client.query(`SELECT * FROM users WHERE username = $1`, [
+    username,
+  ])
+
+  console.log("RESULT : " + result)
+
+  let user: any
+  if (result.rows.length === 0) {
+    // User not found
+    user = null
+  } else {
+    user = result.rows[0]
+  }
+
+  console.log("USER : " + user.username)
+
   if (!user || user.password !== password) {
     // set auth to false if user not found or password is wrong
     request.auth = false
     return // continue
   }
 
+  console.log("auth true")
   // set auth to true and set username
   request.auth = true
   request.username = username
 })
+/*
 
 // write database at the end of every request
 fastify.addHook("onResponse", async (request, reply) => {
@@ -59,6 +80,12 @@ fastify.get("/dumpdb", async (request, reply) => {
 }) */
 
 // Route to retrieve users from the database
+
+fastify.get("/", async (request, reply) => {
+  console.log("PROVA")
+
+  return { status: 200, message: "Hello world!" }
+})
 
 fastify.get("/users", async (request, reply) => {
   try {

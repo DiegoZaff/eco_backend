@@ -1,9 +1,3 @@
--- Create a new database
-CREATE DATABASE mydatabase;
-
--- Switch to the new database
-\c mydatabase;
-
 -- Create a users table
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
@@ -17,4 +11,5 @@ CREATE TABLE users (
 INSERT INTO users (username, email, password)
 VALUES
   ('john_doe', 'john@example.com', 'password123'),
-  ('jane_smith', 'jane@example.com', 'password456');
+  ('jane_smith', 'jane@example.com', 'password456'),
+  ('diego', 'diego@example.com', '123456');
