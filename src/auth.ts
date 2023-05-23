@@ -18,8 +18,15 @@ export const auth: FastifyPluginAsync = async (fastify, opts) => {
       })
     }
 
-    const user = db.data.users.find(user => user.username === username)
-    if (user) {
+    //postgres query
+    const client = await fastify.pg.connect()
+
+    const result = await client.query(
+      `SELECT * FROM users WHERE username = $1`,
+      [username]
+    )
+
+    if (result.rows.length > 0) {
       return reply.status(400).send({
         statusCode: 400,
         error: "Bad Request",
@@ -31,9 +38,22 @@ export const auth: FastifyPluginAsync = async (fastify, opts) => {
       id: crypto.randomUUID(),
       username,
       password,
+      email: "prova@gmail.com",
       score: 0,
     }
-    db.data.users.push(newUser)
+
+    //update postgres db with new user
+    await client.query(
+      "INSERT INTO users (id, username, password,email, score) VALUES ($1, $2, $3, $4, $5)",
+      [
+        newUser.id,
+        newUser.username,
+        newUser.password,
+        newUser.email,
+        newUser.score,
+      ]
+    )
+
     return newUser
   })
 
@@ -51,14 +71,22 @@ export const auth: FastifyPluginAsync = async (fastify, opts) => {
       })
     }
 
-    const user = db.data.users.find(user => user.username === username)
-    if (!user) {
+    const client = await fastify.pg.connect()
+
+    const result = await client.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username]
+    )
+
+    if (result.rows.length === 0) {
       return reply.status(400).send({
         statusCode: 400,
         error: "Bad Request",
         message: "Username does not exist",
       })
     }
+
+    const user = result.rows[0]
 
     if (user.password !== password) {
       return reply.status(400).send({

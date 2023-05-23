@@ -6,6 +6,7 @@ export interface User {
   id: string
   username: string
   password: string
+  email: string
   lastCarbonFootprint?: number
   score: number
 }
@@ -32,12 +33,14 @@ export const db = new Low(adapter, {
       id: crypto.randomUUID(),
       username: "Giovanni",
       password: "",
+      email: "prova@gmail.com",
       score: 24,
     },
     {
       id: crypto.randomUUID(),
       username: "Katie",
       password: "",
+      email: "prova@gmail.com",
       score: 12,
     },
   ],

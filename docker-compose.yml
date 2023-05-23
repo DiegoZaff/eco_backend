@@ -33,7 +33,7 @@ services:
       # to the database
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=db
+      - POSTGRES_DB=postgres
     ports:
       # Standard port for PostgreSQL databases
       - "5432:5432"

@@ -1,6 +1,7 @@
 import Fastify from "fastify"
 import fastifyPostgres from "@fastify/postgres"
 import { AuthRequest } from "./AuthRequest"
+import { auth } from "./auth"
 
 const fastify = Fastify({
   logger: true,
@@ -8,7 +9,7 @@ const fastify = Fastify({
 
 // PostgreSQL connection setup
 fastify.register(fastifyPostgres, {
-  connectionString: "postgres://root:password@postgres:5432/db",
+  connectionString: "postgres://root:password@postgres:5432/postgres",
 })
 
 // Register Hooks
@@ -36,8 +37,6 @@ fastify.addHook("preHandler", async (request: AuthRequest, reply) => {
     username,
   ])
 
-  console.log("RESULT : " + result)
-
   let user: any
   if (result.rows.length === 0) {
     // User not found
@@ -46,15 +45,12 @@ fastify.addHook("preHandler", async (request: AuthRequest, reply) => {
     user = result.rows[0]
   }
 
-  console.log("USER : " + user.username)
-
   if (!user || user.password !== password) {
     // set auth to false if user not found or password is wrong
     request.auth = false
     return // continue
   }
 
-  console.log("auth true")
   // set auth to true and set username
   request.auth = true
   request.username = username
@@ -67,7 +63,7 @@ fastify.addHook("onResponse", async (request, reply) => {
 })
 
 // Register Plugins
-fastify.register(auth, { prefix: "/auth" })
+
 fastify.register(game, { prefix: "/game" })
 
 // Register basic routes
@@ -78,6 +74,8 @@ fastify.get("/", async (request, reply) => {
 fastify.get("/dumpdb", async (request, reply) => {
   return db.data
 }) */
+
+fastify.register(auth, { prefix: "/auth" })
 
 // Route to retrieve users from the database
 
