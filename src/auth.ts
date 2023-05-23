@@ -1,6 +1,6 @@
 import crypto from "crypto"
 import { FastifyPluginAsync } from "fastify"
-import { User, db } from "./db.js"
+import { User } from "./types.js"
 
 export const auth: FastifyPluginAsync = async (fastify, opts) => {
   fastify.post("/register", async (request, reply) => {
@@ -63,6 +63,8 @@ export const auth: FastifyPluginAsync = async (fastify, opts) => {
       password?: string
     } = request.body ?? {}
     const { username, password } = body
+
+
     if (!username || !password) {
       return reply.status(400).send({
         statusCode: 400,

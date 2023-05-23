@@ -2,6 +2,7 @@ import Fastify from "fastify"
 import fastifyPostgres from "@fastify/postgres"
 import { AuthRequest } from "./AuthRequest"
 import { auth } from "./auth"
+import { game } from "./game"
 
 const fastify = Fastify({
   logger: true,
@@ -55,46 +56,14 @@ fastify.addHook("preHandler", async (request: AuthRequest, reply) => {
   request.auth = true
   request.username = username
 })
-/*
-
-// write database at the end of every request
-fastify.addHook("onResponse", async (request, reply) => {
-  await db.write()
-})
-
-// Register Plugins
 
 fastify.register(game, { prefix: "/game" })
-
-// Register basic routes
-fastify.get("/", async (request, reply) => {
-  return { status: 200, message: "Hello world!" }
-})
-
-fastify.get("/dumpdb", async (request, reply) => {
-  return db.data
-}) */
 
 fastify.register(auth, { prefix: "/auth" })
 
 // Route to retrieve users from the database
-
 fastify.get("/", async (request, reply) => {
-  console.log("PROVA")
-
   return { status: 200, message: "Hello world!" }
-})
-
-fastify.get("/users", async (request, reply) => {
-  try {
-    const client = await fastify.pg.connect()
-
-    const { rows } = await client.query("SELECT * FROM users")
-    reply.send(rows)
-  } catch (error) {
-    console.error("Error retrieving users:", error)
-    reply.code(500).send({ error: "Internal server error!" })
-  }
 })
 
 // Start server

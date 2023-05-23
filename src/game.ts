@@ -1,11 +1,18 @@
-import { AuthRequest } from "./AuthRequest.js"
-import { db } from "./db.js"
+import { AuthRequest } from "./AuthRequest"
+import { questions } from "./questions"
+import { DailyChallenge, User } from "./types"
 import { FastifyPluginAsync } from "fastify"
-import { questions } from "./questions.js"
 
 export const game: FastifyPluginAsync = async (fastify, opts) => {
   fastify.get("/leaderboard", async (request: AuthRequest, reply) => {
-    const ldb = db.data.users
+    //get users from postgres db
+    const client = await fastify.pg.connect()
+
+    const result = await client.query(`SELECT * FROM users`)
+
+    const users = result.rows as User[]
+
+    users
       .map(u => ({
         username: u.username,
         score: u.score,
@@ -13,7 +20,7 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
       }))
       .sort((a, b) => b.score - a.score)
 
-    return ldb
+    return users
   })
 
   fastify.post("/carbon_footprint", async (request: AuthRequest, reply) => {
@@ -39,7 +46,20 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
       })
     }
 
-    const user = db.data.users.find(user => user.username === request.username)
+    //get user from postgres db of username
+    const client = await fastify.pg.connect()
+
+    const result = await client.query(
+      "SELECT * FROM users WHERE username = $1",
+      [request.username]
+    )
+
+    let user: User | undefined
+
+    if (result.rows.length != 0) {
+      user = result.rows[0] as User
+    }
+
     if (!user) {
       return reply.status(400).send({
         statusCode: 400,
@@ -50,7 +70,8 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
 
     // check user timestamp
     const now = Date.now()
-    const diff = now - (user.lastCarbonFootprint ?? 0)
+    const timestamp = Math.floor(now / 1000)
+    const diff = now - (user.last_carbon_footprint ?? 0)
     if (diff < 1000 * 60 * 60 * 24) {
       return reply.status(400).send({
         statusCode: 400,
@@ -60,12 +81,26 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
     }
 
     user.score += newscore
-    user.lastCarbonFootprint = now
+    user.last_carbon_footprint = now
+
+    //update user score in postgres db
+    await client.query(
+      "UPDATE users SET score = $1, last_carbon_footprint = to_timestamp($3) WHERE username = $2",
+      [user.score, request.username, timestamp]
+    )
+
     return user
   })
 
   fastify.get("/list_challenges", async (request: AuthRequest, reply) => {
-    return db.data.dailyChallenges.map(c => ({
+    //get list of daily challenges from postgres db
+    const client = await fastify.pg.connect()
+
+    const result = await client.query(`SELECT * FROM dailyChallenges`)
+
+    const dailyChallenges = result.rows as DailyChallenge[]
+
+    return dailyChallenges.map(c => ({
       id: c.id,
       title: c.title,
       description: c.description,
@@ -96,7 +131,20 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
       })
     }
 
-    const user = db.data.users.find(user => user.username === request.username)
+    //get user from postgres db of username
+    const client = await fastify.pg.connect()
+
+    const result = await client.query(
+      "SELECT * FROM users WHERE username = $1",
+      [request.username]
+    )
+
+    let user: User | undefined
+
+    if (result.rows.length != 0) {
+      user = result.rows[0] as User
+    }
+
     if (!user) {
       return reply.status(400).send({
         statusCode: 400,
@@ -105,7 +153,17 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
       })
     }
 
-    const challenge = db.data.dailyChallenges.find(c => c.id === challengeId)
+    //get challenge from postgres db of challengeId
+    const challengeQuery = await client.query(
+      "SELECT * FROM dailyChallenges WHERE id = $1",
+      [challengeId]
+    )
+
+    let challenge: DailyChallenge | undefined
+    if (challengeQuery.rows.length !== 0) {
+      challenge = challengeQuery.rows[0] as DailyChallenge
+    }
+
     if (!challenge) {
       return reply.status(400).send({
         statusCode: 400,
@@ -115,7 +173,7 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
     }
 
     // check if user already completed challenge
-    if (challenge.userCompleted.includes(user.id)) {
+    if (challenge.user_completed.includes(user.id)) {
       return reply.status(400).send({
         statusCode: 400,
         error: "Bad Request",
@@ -124,7 +182,21 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
     }
 
     user.score += challenge.points
-    challenge.userCompleted.push(user.id)
+
+    challenge.user_completed.push(user.id)
+
+    //update challenge user_completed in postgres db
+    await client.query(
+      "UPDATE dailyChallenges SET user_completed = $1 WHERE id = $2",
+      [challenge.user_completed, challengeId]
+    )
+
+    //update user score in postgres db
+    await client.query("UPDATE users SET score = $1 WHERE username = $2", [
+      user.score,
+      request.username,
+    ])
+
     return user
   })
 
@@ -166,7 +238,20 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
       })
     }
 
-    const user = db.data.users.find(user => user.username === request.username)
+    //get user from postgres db of username
+    const client = await fastify.pg.connect()
+
+    const result = await client.query(
+      "SELECT * FROM users WHERE username = $1",
+      [request.username]
+    )
+
+    let user: User | undefined
+
+    if (result.rows.length != 0) {
+      user = result.rows[0] as User
+    }
+
     if (!user) {
       return reply.status(400).send({
         statusCode: 400,
@@ -185,6 +270,13 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
     )
 
     user.score += newScore
+
+    //update user score in postgres db
+    await client.query("UPDATE users SET score = $1 WHERE username = $2", [
+      user.score,
+      request.username,
+    ])
+
     return user
   })
 }
