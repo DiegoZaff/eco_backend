@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   eco_backend:
     # image: diegozaff/eco_backend:latest
@@ -16,12 +16,12 @@ services:
     volumes:
       - ./src:/usr/src/app/src
       - ./nodemon.json:/usr/src/app/nodemon.json
-      
+
     # command: npm run dev
 
   # This is the configuration for our PostgreSQL database container
   # Note the `postgres` name is important, in out Node app when we refer
-  # to  `host: "postgres"` that value is mapped on the network to the 
+  # to  `host: "postgres"` that value is mapped on the network to the
   # address of this container.
   postgres:
     image: postgres:14.1-alpine
@@ -56,3 +56,5 @@ services:
       - postgres
 volumes:
   pgdata:
+    #create volume automatically if it doesn't already exists
+    external: true
