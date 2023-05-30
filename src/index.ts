@@ -62,8 +62,9 @@ fastify.register(game, { prefix: "/game" })
 fastify.register(auth, { prefix: "/auth" })
 
 // Route to retrieve users from the database
-fastify.get("/", async (request, reply) => {
+fastify.get("/", async () => {
   return { status: 200, message: "Hello world!" }
+  
 })
 
 // Start server

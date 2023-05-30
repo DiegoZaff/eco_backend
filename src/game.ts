@@ -5,6 +5,14 @@ import { FastifyPluginAsync } from "fastify"
 
 export const game: FastifyPluginAsync = async (fastify, opts) => {
   fastify.get("/leaderboard", async (request: AuthRequest, reply) => {
+    if (!request.auth) {
+      return reply.status(401).send({
+        statusCode: 401,
+        error: "Unauthorized",
+        message: "User is not authenticated",
+      })
+    }
+
     //get users from postgres db
     const client = await fastify.pg.connect()
 
@@ -12,7 +20,7 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
 
     const users = result.rows as User[]
 
-    users
+    const newUsers = users
       .map(u => ({
         username: u.username,
         score: u.score,
@@ -20,7 +28,8 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
       }))
       .sort((a, b) => b.score - a.score)
 
-    return users
+    client.release()
+    return newUsers
   })
 
   fastify.post("/carbon_footprint", async (request: AuthRequest, reply) => {
@@ -88,7 +97,7 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
       "UPDATE users SET score = $1, last_carbon_footprint = to_timestamp($3) WHERE username = $2",
       [user.score, request.username, timestamp]
     )
-
+    client.release()
     return user
   })
 
@@ -197,6 +206,7 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
       request.username,
     ])
 
+    client.release()
     return user
   })
 
@@ -276,7 +286,8 @@ export const game: FastifyPluginAsync = async (fastify, opts) => {
       user.score,
       request.username,
     ])
-
+    
+    client.release()
     return user
   })
 }

@@ -54,6 +54,7 @@ export const auth: FastifyPluginAsync = async (fastify, opts) => {
       ]
     )
 
+    client.release()
     return newUser
   })
 
@@ -63,7 +64,6 @@ export const auth: FastifyPluginAsync = async (fastify, opts) => {
       password?: string
     } = request.body ?? {}
     const { username, password } = body
-
 
     if (!username || !password) {
       return reply.status(400).send({
@@ -97,7 +97,8 @@ export const auth: FastifyPluginAsync = async (fastify, opts) => {
         message: "Password is incorrect",
       })
     }
-
+    client.release()
+    
     return user
   })
 }
